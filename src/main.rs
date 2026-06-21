@@ -15,9 +15,12 @@ struct Args {
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
-    let (tx, _rx) = mpsc::channel(100);
+    
+    let (tx, rx) = mpsc::channel(100);
 
-    println!("net_sentinel monitoring {}...", args.ip);
+    println!("NetSentinel monitoring {}...", args.ip);
 
-    sniffer::start_sniffer(args.ip, tx);
+    tokio::spawn(logger::start_logger(rx));
+
+    sniffer::start_sniffer(args.ip, tx).await;
 }
