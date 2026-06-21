@@ -11,6 +11,10 @@ pub fn process_packet(packet: &[u8], target_ip: &str) -> Option<AuditEntry> {
     //     return None;
     // }
 
+    if src_ip != target_ip && dst_ip != target_ip {
+    return None;
+}
+
     if let Some(tcp) = TcpPacket::new(ipv4.payload()) {
         return Some(AuditEntry {
             timestamp: Local::now().to_rfc3339(),
