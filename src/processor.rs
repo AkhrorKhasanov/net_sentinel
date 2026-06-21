@@ -7,9 +7,9 @@ use chrono::Local;
 pub fn process_packet(packet: &[u8], target_ip: &str) -> Option<AuditEntry> {
     let ipv4 = Ipv4Packet::new(packet)?;
     
-    if ipv4.get_source().to_string() != target_ip && ipv4.get_destination().to_string() != target_ip {
-        return None;
-    }
+    // if ipv4.get_source().to_string() != target_ip && ipv4.get_destination().to_string() != target_ip {
+    //     return None;
+    // }
 
     if let Some(tcp) = TcpPacket::new(ipv4.payload()) {
         return Some(AuditEntry {
