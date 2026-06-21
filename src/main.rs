@@ -15,7 +15,7 @@ struct Args {
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
-    let (tx, rx) = mpsc::channel(100);
+    let (tx, _rx) = mpsc::channel(100);
 
     println!("net_sentinel monitoring {}...", args.ip);
 
