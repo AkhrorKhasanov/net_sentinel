@@ -14,16 +14,18 @@ pub fn process_packet(packet: &[u8], target_ip: &str) -> Option<AuditEntry> {
         return None;
     }
 
-    if tcp.get_destination() != 80 && tcp.get_destination() != 443 {
-    return None;
-}
-
     if let Some(tcp) = TcpPacket::new(ipv4.payload()) {
+        
+        let dst_port = tcp.get_destination();
+        if dst_port != 80 && dst_port != 443 {
+            return None;
+        }
+
         return Some(AuditEntry {
             timestamp: Local::now().to_rfc3339(),
-            src_ip, 
-            dst_ip, 
-            dst_port: tcp.get_destination(),
+            src_ip,
+            dst_ip,
+            dst_port,
             protocol: "TCP".to_string(),
             flags: format!("{:?}", tcp.get_flags()),
             packet_size: packet.len(),
