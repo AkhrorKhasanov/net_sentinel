@@ -62,16 +62,23 @@ Add the following content:
 
 Ini, TOML
 [Unit]
+
 Description=Net Sentinel Network Monitor
+
 After=network.target
 
 [Service]
-ExecStart=/path/to/your/net_sentinel --ip 143.198.230.98
+
+ExecStart=/path/to/your/net_sentinel --ip <IP>
+
 Restart=always
+
 User=root
 
 [Install]
+
 WantedBy=multi-user.target
+
 Enable and start:
 
 ```bash
@@ -86,5 +93,5 @@ The logs are saved to logs/audit.jsonl. You can view them in real-time:
 ```bash
 tail -f logs/audit.jsonl
 ```
-Contributing
+# Contributing
 Contributions are welcome! Please feel free to submit a Pull Request or open an issue for any bugs or feature requests.
