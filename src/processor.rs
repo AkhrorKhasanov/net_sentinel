@@ -14,6 +14,10 @@ pub fn process_packet(packet: &[u8], target_ip: &str) -> Option<AuditEntry> {
         return None;
     }
 
+    if tcp.get_destination() != 80 && tcp.get_destination() != 443 {
+    return None;
+}
+
     if let Some(tcp) = TcpPacket::new(ipv4.payload()) {
         return Some(AuditEntry {
             timestamp: Local::now().to_rfc3339(),
