@@ -1,25 +1,21 @@
 use pnet::datalink::{self, Channel::Ethernet};
-use pnet::packet::Packet;
 use tokio::sync::mpsc::Sender;
 use crate::processor::process_packet;
 
 pub async fn start_sniffer(target_ip: String, tx: Sender<crate::models::AuditEntry>) {
     let interfaces = datalink::interfaces();
-    
     let interface = interfaces
         .into_iter()
-        .find(|i| i.name == "eth0")
-        .expect("Interface 'eth0' not found! Please check your network interface name.");
+        .find(|i| i.is_up() && !i.is_loopback() && !i.ips.is_empty())
+        .expect("No active network interface found! Please check your internet connection.");
 
-    println!("NetSentinel: Started listening on interface: {}...", interface.name);
+    println!("NetSentinel: Started sniffing on interface: {}...", interface.name);
 
     let (_, mut rx) = match datalink::channel(&interface, Default::default()) {
         Ok(Ethernet(tx, rx)) => (tx, rx),
         Ok(_) => panic!("Only Ethernet channels are supported"),
-        Err(e) => panic!("Error opening channel: {}", e),
+        Err(e) => panic!("Error opening network channel: {}", e),
     };
-
-    println!("NetSentinel: Waiting for packets...");
 
     loop {
         match rx.next() {
@@ -30,9 +26,7 @@ pub async fn start_sniffer(target_ip: String, tx: Sender<crate::models::AuditEnt
                     }
                 }
             }
-            Err(e) => {
-                eprintln!("Error receiving packet: {}", e);
-            }
+            Err(e) => eprintln!("Error receiving packet: {}", e),
         }
     }
 }
