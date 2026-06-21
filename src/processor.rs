@@ -5,21 +5,20 @@ use crate::models::AuditEntry;
 use chrono::Local;
 
 pub fn process_packet(packet: &[u8], target_ip: &str) -> Option<AuditEntry> {
-    let ipv4 = Ipv4Packet::new(packet)?;
+    let ipv4 = Ipv4Packet::new(&packet[14..])?;
     
-    // if ipv4.get_source().to_string() != target_ip && ipv4.get_destination().to_string() != target_ip {
-    //     return None;
-    // }
+    let src_ip = ipv4.get_source().to_string();
+    let dst_ip = ipv4.get_destination().to_string();
 
     if src_ip != target_ip && dst_ip != target_ip {
-    return None;
-}
+        return None;
+    }
 
     if let Some(tcp) = TcpPacket::new(ipv4.payload()) {
         return Some(AuditEntry {
             timestamp: Local::now().to_rfc3339(),
-            src_ip: ipv4.get_source().to_string(),
-            dst_ip: ipv4.get_destination().to_string(),
+            src_ip, 
+            dst_ip, 
             dst_port: tcp.get_destination(),
             protocol: "TCP".to_string(),
             flags: format!("{:?}", tcp.get_flags()),
