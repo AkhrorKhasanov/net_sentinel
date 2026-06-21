@@ -3,34 +3,35 @@ use pnet::packet::Packet;
 use tokio::sync::mpsc::Sender;
 use crate::processor::process_packet;
 
-pub fn start_sniffer(target_ip: String, tx: Sender<crate::models::AuditEntry>) {
+pub async fn start_sniffer(target_ip: String, tx: Sender<crate::models::AuditEntry>) {
     let interfaces = datalink::interfaces();
     
     let interface = interfaces
         .into_iter()
         .find(|i| i.name == "eth0")
-        .expect("eth0 interfeysi topilmadi! Iltimos, interfeys nomini tekshiring.");
+        .expect("Interface 'eth0' not found! Please check your network interface name.");
 
-    println!("NetSentinel: {} interfeysi orqali tinglash boshlandi...", interface.name);
+    println!("NetSentinel: Started listening on interface: {}...", interface.name);
 
     let (_, mut rx) = match datalink::channel(&interface, Default::default()) {
         Ok(Ethernet(tx, rx)) => (tx, rx),
-        Ok(_) => panic!("Faqat Ethernet kanallari qo'llab-quvvatlanadi"),
-        Err(e) => panic!("Kanalni ochishda xatolik: {}", e),
+        Ok(_) => panic!("Only Ethernet channels are supported"),
+        Err(e) => panic!("Error opening channel: {}", e),
     };
 
-    println!("NetSentinel: Paketlar kutilmoqda...");
+    println!("NetSentinel: Waiting for packets...");
 
     loop {
         match rx.next() {
             Ok(packet) => {
-
                 if let Some(entry) = process_packet(packet, &target_ip) {
-                    let _ = tx.blocking_send(entry);
+                    if let Err(e) = tx.send(entry).await {
+                        eprintln!("Failed to send audit entry to logger: {}", e);
+                    }
                 }
             }
             Err(e) => {
-                eprintln!("Xatolik: {}", e);
+                eprintln!("Error receiving packet: {}", e);
             }
         }
     }
