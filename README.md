@@ -48,6 +48,7 @@ If you want to download net_sentinel.exe then do this command
 
 ```bash
 net_sentinel.exe --ip <IP_ADDRESS>
+```
 
 # Usage
 You must run the executable with sudo (root privileges) to capture network packets.
