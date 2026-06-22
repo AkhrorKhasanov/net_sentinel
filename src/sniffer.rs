@@ -10,10 +10,15 @@ pub async fn start_sniffer(target_ip: String, tx: Sender<crate::models::AuditEnt
         println!("Found: {} | IPs: {:?} | Up: {}", iface.name, iface.ips, iface.is_up());
     }
 
+    // let interface = interfaces
+    //     .into_iter()
+    //     .find(|i| !i.is_loopback() && !i.ips.is_empty())
+    //     .expect("No suitable network interface found. Please ensure Npcap is installed and you are running as Administrator.");
+
     let interface = interfaces
         .into_iter()
-        .find(|i| !i.is_loopback() && !i.ips.is_empty())
-        .expect("No suitable network interface found. Please ensure Npcap is installed and you are running as Administrator.");
+        .find(|i| i.ips.iter().any(|ip| !ip.ip().is_unspecified()))
+        .expect("No valid network interface with an IP address found.");
 
     println!("NetSentinel: Using interface: {}", interface.name);
     println!("NetSentinel: Listening for traffic to/from: {}", target_ip);
